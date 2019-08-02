@@ -2,36 +2,40 @@
 
 myhalf LinearFromsRGB(myhalf c)
 {
-	if (c <= 0.04045)
-		return c * (1.0 / 12.92);
-	return myhalf(pow((c + 0.055)*(1.0/1.055), 2.4));
+	myhalf falsePathVal = c * (1.0f / 12.92f);
+	myhalf truePathVal = pow((c + 0.055f) * (1.0f/1.055f), 2.4f);
+	return mix(falsePathVal, truePathVal, c > 0.04045f);
 }
 
 myhalf3 LinearFromsRGB(myhalf3 v)
 {
-	return myhalf3(LinearFromsRGB(v.r), LinearFromsRGB(v.g), LinearFromsRGB(v.b));
+	myhalf3 falsePathVal = v * myhalf3(1.0f / 12.92f);
+	myhalf3 truePathVal = pow((v + myhalf3(0.055f)) * myhalf3(1.0f/1.055f), myhalf3(2.4f));
+	return mix(falsePathVal, truePathVal, greaterThan(v, myhalf3(0.04045f)));
 }
 
 myhalf4 LinearFromsRGB(myhalf4 v)
 {
-	return myhalf4(LinearFromsRGB(v.r), LinearFromsRGB(v.g), LinearFromsRGB(v.b), v.a);
+	return myhalf4(LinearFromsRGB(v.rgb), v.a);
 }
 
 myhalf sRGBFromLinear(myhalf c)
 {
-	if (c < 0.0031308)
-		return c * 12.92;
-	return 1.055 * pow(c, 1.0/2.4) - 0.055;
+	myhalf falsePathVal = c * 12.92f;
+	myhalf truePathVal = 1.055f * pow(c, 1.0f/2.4f) - 0.055f;
+	return mix(falsePathVal, truePathVal, c >= 0.0031308f);
 }
 
 myhalf3 sRGBFromLinear(myhalf3 v)
 {
-	return myhalf3(sRGBFromLinear(v.r), sRGBFromLinear(v.g), sRGBFromLinear(v.b));
+	myhalf3 falsePathVal = v * myhalf3(12.92f);
+	myhalf3 truePathVal = myhalf3(1.055f) * pow(v, myhalf3(1.0f/2.4f)) - myhalf3(0.055f);
+	return mix(falsePathVal, truePathVal, greaterThanEqual(v, myhalf3(0.0031308f)));
 }
 
 myhalf4 sRGBFromLinear(myhalf4 v)
 {
-	return myhalf4(sRGBFromLinear(v.r), sRGBFromLinear(v.g), sRGBFromLinear(v.b), v.a);
+	return myhalf4(sRGBFromLinear(v.rgb), v.a);
 }
 
 #ifdef APPLY_SRGB2LINEAR
